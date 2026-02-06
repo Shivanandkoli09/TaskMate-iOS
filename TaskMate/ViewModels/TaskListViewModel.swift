@@ -22,4 +22,9 @@ final class TaskListViewModel {
     func task(at index: Int) -> Task {
         tasks[index]
     }
+    
+    func addTask(_ task: Task) {
+        tasks.append(task)
+        storageService.saveTasks(tasks)
+    }
 }

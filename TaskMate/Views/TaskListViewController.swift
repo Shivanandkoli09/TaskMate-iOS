@@ -74,7 +74,14 @@ final class TaskListViewController: UIViewController {
     }
     
     @objc func addTaskTapped() {
-        // Phase 2 – Step 6
+        let addVC = AddTaskViewController()
+        addVC.onTaskCreated = { [weak self] task in
+            self?.viewModel.addTask(task)
+            self?.updateUI()
+        }
+        
+        let navController = UINavigationController(rootViewController: addVC)
+        present(navController, animated: true)
     }
     
 }
