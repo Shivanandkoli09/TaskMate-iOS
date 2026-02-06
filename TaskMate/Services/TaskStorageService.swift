@@ -19,15 +19,17 @@ final class TaskStorageService {
         }
     }
     
-    func fetchTasks() -> [Task]? {
-        do {
-            if let data = UserDefaults.standard.data(forKey: taskKey) {
-                return try JSONDecoder().decode([Task].self, from: data)
-            }
-        } catch {
-            print("Failed to fetch tasks: \(error)")
+    func fetchTasks() -> [Task] {
+        guard let data = UserDefaults.standard.data(forKey: taskKey) else {
+            return []
         }
-        return nil
+        
+        do {
+            return try JSONDecoder().decode([Task].self, from: data)
+        } catch {
+            print("❌ Failed to decode tasks:", error)
+            return []
+        }
     }
     
     func clearTasks() {
