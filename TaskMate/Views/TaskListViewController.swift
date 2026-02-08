@@ -21,8 +21,14 @@ final class TaskListViewController: UIViewController {
         setUpEmptyStateLabel()
         
         viewModel.onTasksUpdated = { [weak self] in
-            self?.tableView.reloadData()
+            guard let self = self else { return }
+            self.tableView.reloadData()
+            self.updateEmptyState()
         }
+    }
+    
+    private func updateEmptyState() {
+        emptyStateLabel.isHidden = viewModel.numberOfTask() > 0
     }
     
     func setupUI() {
