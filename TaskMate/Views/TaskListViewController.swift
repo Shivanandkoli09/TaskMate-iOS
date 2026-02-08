@@ -20,6 +20,9 @@ final class TaskListViewController: UIViewController {
         setUpTableView()
         setUpEmptyStateLabel()
         
+        viewModel.onTasksUpdated = { [weak self] in
+            self?.tableView.reloadData()
+        }
     }
     
     func setupUI() {
@@ -95,16 +98,25 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-        guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: TaskCell.identifier,
-            for: indexPath
-        ) as? TaskCell else {
+        
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: TaskCell.identifier,for: indexPath) as? TaskCell else {
             return UITableViewCell()
         }
 
         let task = viewModel.task(at: indexPath.row)
         cell.configure(with: task)
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        viewModel.toggleTaskCompletion(at: indexPath.row)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView,commit editingStyle: UITableViewCell.EditingStyle,forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            viewModel.deleteTask(at: indexPath.row)
+        }
     }
 }
