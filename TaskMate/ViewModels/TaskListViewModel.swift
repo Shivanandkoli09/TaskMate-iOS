@@ -8,18 +8,15 @@
 import Foundation
 
 final class TaskListViewModel {
-    private var storageService = TaskStorageService()
+//    private var storageService = TaskStorageService()
+    private var storageService: TaskStorageServiceProtocol
     private var tasks: [Task] = []
     
     var onTasksUpdated: (() -> Void)?
     
-    init() {
+    init(storageService: TaskStorageServiceProtocol = CoreDataTaskStorageService()) {
+        self.storageService = storageService
         loadTasks()
-    }
-    
-    func loadTasks() {
-        tasks = storageService.fetchTasks()
-        onTasksUpdated?()
     }
     
     func numberOfTask() -> Int {
@@ -30,23 +27,26 @@ final class TaskListViewModel {
         tasks[index]
     }
     
+    func loadTasks() {
+        tasks = storageService.fetchTasks()
+        onTasksUpdated?()
+    }
+
     func addTask(_ task: Task) {
-        tasks.append(task)
-        storageService.saveTasks(tasks)
-        onTasksUpdated?()
+        storageService.saveTask(task)
+        loadTasks()
     }
-    
-    func toggleTaskCompletion(at index: Int) {
-        guard tasks.indices.contains(index) else { return }
-        tasks[index].isCompleted.toggle()
-        storageService.saveTasks(tasks)
-        onTasksUpdated?()
-    }
-    
+
     func deleteTask(at index: Int) {
-        guard tasks.indices.contains(index) else { return }
-        tasks.remove(at: index)
-        storageService.saveTasks(tasks)
-        onTasksUpdated?()
+        let task = tasks[index]
+        storageService.deleteTask(task)
+        loadTasks()
+    }
+
+    func toggleTaskCompletion(at index: Int) {
+        var task = tasks[index]
+        task.isCompleted.toggle()
+        storageService.updateTask(task)
+        loadTasks()
     }
 }
