@@ -6,7 +6,7 @@
 //
 
 protocol TaskStorageServiceProtocol {
-    func fetchTasks() -> [Task]
+    func fetchTasks(sortedBy: TaskSortOption) -> [Task]
     func saveTask(_ task: Task)
     func updateTask(_ task: Task)
     func deleteTask(_ task: Task)

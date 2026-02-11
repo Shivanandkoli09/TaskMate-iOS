@@ -9,6 +9,7 @@ import Foundation
 
 final class TaskListViewModel {
 //    private var storageService = TaskStorageService()
+    private var currentSortOption: TaskSortOption = .creationDate
     private var storageService: TaskStorageServiceProtocol
     private var tasks: [Task] = []
     
@@ -28,8 +29,13 @@ final class TaskListViewModel {
     }
     
     func loadTasks() {
-        tasks = storageService.fetchTasks()
+        tasks = storageService.fetchTasks(sortedBy: currentSortOption)
         onTasksUpdated?()
+    }
+    
+    func updateSortOption(_ option: TaskSortOption) {
+        currentSortOption = option
+        loadTasks()
     }
 
     func addTask(_ task: Task) {

@@ -25,6 +25,31 @@ final class TaskListViewController: UIViewController {
             self.tableView.reloadData()
             self.updateEmptyState()
         }
+        viewModel.loadTasks()
+    }
+    
+    @objc private func sortTapped() {
+        let alert = UIAlertController(title: "Sort By", message: nil, preferredStyle: .actionSheet)
+
+        alert.addAction(UIAlertAction(title: "Creation Date", style: .default) { _ in
+            self.viewModel.updateSortOption(.creationDate)
+        })
+
+        alert.addAction(UIAlertAction(title: "Due Date", style: .default) { _ in
+            self.viewModel.updateSortOption(.dueDate)
+        })
+
+        alert.addAction(UIAlertAction(title: "Priority", style: .default) { _ in
+            self.viewModel.updateSortOption(.priority)
+        })
+
+        alert.addAction(UIAlertAction(title: "Title", style: .default) { _ in
+            self.viewModel.updateSortOption(.title)
+        })
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        present(alert, animated: true)
     }
     
     private func updateEmptyState() {
@@ -35,6 +60,13 @@ final class TaskListViewController: UIViewController {
         title = "TaskMate"
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTaskTapped))
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "Sort",
+            style: .plain,
+            target: self,
+            action: #selector(sortTapped)
+        )
         
         view.addSubview(tableView)
         view.addSubview(emptyStateLabel)

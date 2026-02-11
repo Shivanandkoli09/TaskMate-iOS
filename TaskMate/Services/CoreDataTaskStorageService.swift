@@ -16,11 +16,42 @@ final class CoreDataTaskStorageService: TaskStorageServiceProtocol {
     }
 
     // MARK: - Fetch
-    func fetchTasks() -> [Task] {
+//    func fetchTasks() -> [Task] {
+//        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+//        request.sortDescriptors = [
+//            NSSortDescriptor(key: "createdAt", ascending: false)
+//        ]
+//
+//        do {
+//            let entities = try context.fetch(request)
+//            return entities.map { Task(entity: $0) }
+//        } catch {
+//            print("Fetch error:", error)
+//            return []
+//        }
+//    }
+    
+    func fetchTasks(sortedBy option: TaskSortOption) -> [Task] {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-        request.sortDescriptors = [
-            NSSortDescriptor(key: "createdAt", ascending: false)
-        ]
+
+        switch option {
+        case .creationDate:
+            request.sortDescriptors = [
+                NSSortDescriptor(key: "createdAt", ascending: false)
+            ]
+        case .dueDate:
+            request.sortDescriptors = [
+                NSSortDescriptor(key: "dueDate", ascending: true)
+            ]
+        case .priority:
+            request.sortDescriptors = [
+                NSSortDescriptor(key: "priority", ascending: false)
+            ]
+        case .title:
+            request.sortDescriptors = [
+                NSSortDescriptor(key: "title", ascending: true)
+            ]
+        }
 
         do {
             let entities = try context.fetch(request)
