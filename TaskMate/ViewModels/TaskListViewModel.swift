@@ -8,31 +8,47 @@
 import Foundation
 
 final class TaskListViewModel {
-//    private var storageService = TaskStorageService()
-    private var currentSortOption: TaskSortOption = .creationDate
+
+    // MARK: - Properties
+
     private var storageService: TaskStorageServiceProtocol
-    private var tasks: [Task] = []
-    
+    private var currentSortOption: TaskSortOption = .creationDate
+    private var currentFilterOption: TaskFilterOption = .all
+
+    private var allTasks: [Task] = []
+
+    private(set) var tasks: [Task] = [] {
+        didSet {
+            onTasksUpdated?()
+        }
+    }
+
     var onTasksUpdated: (() -> Void)?
-    
+
+    // MARK: - Init
+
     init(storageService: TaskStorageServiceProtocol = CoreDataTaskStorageService()) {
         self.storageService = storageService
-        loadTasks()
     }
-    
-    func numberOfTask() -> Int {
-        tasks.count
+
+    func numberOfTasks() -> Int {
+        return tasks.count
     }
-    
+
     func task(at index: Int) -> Task {
-        tasks[index]
+        return tasks[index]
     }
-    
+
     func loadTasks() {
-        tasks = storageService.fetchTasks(sortedBy: currentSortOption)
-        onTasksUpdated?()
+        allTasks = storageService.fetchTasks(sortedBy: currentSortOption)
+        applyFilter()
     }
-    
+
+    func updateFilterOption(_ option: TaskFilterOption) {
+        currentFilterOption = option
+        applyFilter()
+    }
+
     func updateSortOption(_ option: TaskSortOption) {
         currentSortOption = option
         loadTasks()
@@ -54,5 +70,18 @@ final class TaskListViewModel {
         task.isCompleted.toggle()
         storageService.updateTask(task)
         loadTasks()
+    }
+
+    // MARK: - Private
+
+    private func applyFilter() {
+        switch currentFilterOption {
+        case .all:
+            tasks = allTasks
+        case .pending:
+            tasks = allTasks.filter { !$0.isCompleted }
+        case .completed:
+            tasks = allTasks.filter { $0.isCompleted }
+        }
     }
 }
