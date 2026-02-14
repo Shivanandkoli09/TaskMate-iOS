@@ -8,45 +8,80 @@
 import Foundation
 
 final class TaskListViewModel {
-    private var storageService = TaskStorageService()
-    private var tasks: [Task] = []
-    
+
+    // MARK: - Properties
+
+    private var storageService: TaskStorageServiceProtocol
+    private var currentSortOption: TaskSortOption = .creationDate
+    private var currentFilterOption: TaskFilterOption = .all
+
+    private var allTasks: [Task] = []
+
+    private(set) var tasks: [Task] = [] {
+        didSet {
+            onTasksUpdated?()
+        }
+    }
+
     var onTasksUpdated: (() -> Void)?
-    
-    init() {
+
+    // MARK: - Init
+
+    init(storageService: TaskStorageServiceProtocol = CoreDataTaskStorageService()) {
+        self.storageService = storageService
+    }
+
+    func numberOfTasks() -> Int {
+        return tasks.count
+    }
+
+    func task(at index: Int) -> Task {
+        return tasks[index]
+    }
+
+    func loadTasks() {
+        allTasks = storageService.fetchTasks(sortedBy: currentSortOption)
+        applyFilter()
+    }
+
+    func updateFilterOption(_ option: TaskFilterOption) {
+        currentFilterOption = option
+        applyFilter()
+    }
+
+    func updateSortOption(_ option: TaskSortOption) {
+        currentSortOption = option
         loadTasks()
     }
-    
-    func loadTasks() {
-        tasks = storageService.fetchTasks()
-        onTasksUpdated?()
-    }
-    
-    func numberOfTask() -> Int {
-        tasks.count
-    }
-    
-    func task(at index: Int) -> Task {
-        tasks[index]
-    }
-    
+
     func addTask(_ task: Task) {
-        tasks.append(task)
-        storageService.saveTasks(tasks)
-        onTasksUpdated?()
+        storageService.saveTask(task)
+        loadTasks()
     }
-    
-    func toggleTaskCompletion(at index: Int) {
-        guard tasks.indices.contains(index) else { return }
-        tasks[index].isCompleted.toggle()
-        storageService.saveTasks(tasks)
-        onTasksUpdated?()
-    }
-    
+
     func deleteTask(at index: Int) {
-        guard tasks.indices.contains(index) else { return }
-        tasks.remove(at: index)
-        storageService.saveTasks(tasks)
-        onTasksUpdated?()
+        let task = tasks[index]
+        storageService.deleteTask(task)
+        loadTasks()
+    }
+
+    func toggleTaskCompletion(at index: Int) {
+        var task = tasks[index]
+        task.isCompleted.toggle()
+        storageService.updateTask(task)
+        loadTasks()
+    }
+
+    // MARK: - Private
+
+    private func applyFilter() {
+        switch currentFilterOption {
+        case .all:
+            tasks = allTasks
+        case .pending:
+            tasks = allTasks.filter { !$0.isCompleted }
+        case .completed:
+            tasks = allTasks.filter { $0.isCompleted }
+        }
     }
 }
