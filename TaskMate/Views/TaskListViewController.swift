@@ -180,13 +180,55 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        viewModel.toggleTaskCompletion(at: indexPath.row)
+//        viewModel.toggleTaskCompletion(at: indexPath.row)
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-    func tableView(_ tableView: UITableView,commit editingStyle: UITableViewCell.EditingStyle,forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            viewModel.deleteTask(at: indexPath.row)
+//    func tableView(_ tableView: UITableView,commit editingStyle: UITableViewCell.EditingStyle,forRowAt indexPath: IndexPath) {
+//        if editingStyle == .delete {
+//            viewModel.deleteTask(at: indexPath.row)
+//        }
+//    }
+    
+    func tableView(_ tableView: UITableView,trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+
+        let deleteAction = UIContextualAction(
+            style: .destructive,
+            title: "Delete"
+        ) { [weak self] (_, _, completionHandler) in
+
+            self?.viewModel.deleteTask(at: indexPath.row)
+            completionHandler(true)
         }
+
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        configuration.performsFirstActionWithFullSwipe = true
+
+        return configuration
+    }
+    
+    func tableView(_ tableView: UITableView,
+                   leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+    -> UISwipeActionsConfiguration? {
+
+        let task = viewModel.task(at: indexPath.row)
+
+        let title = task.isCompleted ? "Undo" : "Complete"
+
+        let toggleAction = UIContextualAction(
+            style: .normal,
+            title: title
+        ) { [weak self] (_, _, completionHandler) in
+
+            self?.viewModel.toggleTaskCompletion(at: indexPath.row)
+            completionHandler(true)
+        }
+
+        toggleAction.backgroundColor = task.isCompleted ? .systemOrange : .systemGreen
+
+        let configuration = UISwipeActionsConfiguration(actions: [toggleAction])
+        configuration.performsFirstActionWithFullSwipe = false
+
+        return configuration
     }
 }
