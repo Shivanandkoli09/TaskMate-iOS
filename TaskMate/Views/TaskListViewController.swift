@@ -14,6 +14,7 @@ final class TaskListViewController: UIViewController {
     private let viewModel = TaskListViewModel()
     private let tableView = UITableView()
     private let emptyStateLabel = UILabel()
+    private let searchController = UISearchController(searchResultsController: nil)
 
     private let filterSegmentedControl: UISegmentedControl = {
         let control = UISegmentedControl(items: ["All", "Pending", "Completed"])
@@ -31,6 +32,7 @@ final class TaskListViewController: UIViewController {
         setUpTableView()
         setUpEmptyStateLabel()
         setupBindings()
+        setupSearchController()
 
         viewModel.loadTasks()
     }
@@ -46,7 +48,19 @@ final class TaskListViewController: UIViewController {
             self.updateEmptyState()
         }
     }
-
+    
+    private func setupSearchController() {
+        
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search Tasks"
+        
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        
+        definesPresentationContext = true
+    }
+    
     func setupUI() {
         title = "TaskMate"
         view.backgroundColor = .systemBackground
@@ -159,7 +173,12 @@ final class TaskListViewController: UIViewController {
 }
 
 
-extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
+extension TaskListViewController: UITableViewDataSource, UITableViewDelegate, UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let searchText = searchController.searchBar.text ?? ""
+        viewModel.updateSearchText(searchText)
+    }
+    
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.numberOfTasks()

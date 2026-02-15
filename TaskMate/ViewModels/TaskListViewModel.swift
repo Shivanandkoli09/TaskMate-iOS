@@ -14,6 +14,7 @@ final class TaskListViewModel {
     private var storageService: TaskStorageServiceProtocol
     private var currentSortOption: TaskSortOption = .creationDate
     private var currentFilterOption: TaskFilterOption = .all
+    private var currentSearchText: String = ""
 
     private var allTasks: [Task] = []
 
@@ -56,12 +57,14 @@ final class TaskListViewModel {
 
     func addTask(_ task: Task) {
         storageService.saveTask(task)
+        NotificationManager.shared.scheduleNotification(for: task)
         loadTasks()
     }
 
     func deleteTask(at index: Int) {
         let task = tasks[index]
         storageService.deleteTask(task)
+        NotificationManager.shared.cancelNotification(for: task)
         loadTasks()
     }
 
@@ -69,19 +72,41 @@ final class TaskListViewModel {
         var task = tasks[index]
         task.isCompleted.toggle()
         storageService.updateTask(task)
+
+        if task.isCompleted {
+            NotificationManager.shared.cancelNotification(for: task)
+        } else {
+            NotificationManager.shared.scheduleNotification(for: task)
+        }
+
         loadTasks()
     }
 
     // MARK: - Private
 
     private func applyFilter() {
+        
+        var filteredTasks: [Task] = []
         switch currentFilterOption {
         case .all:
-            tasks = allTasks
+            filteredTasks = allTasks
         case .pending:
-            tasks = allTasks.filter { !$0.isCompleted }
+            filteredTasks = allTasks.filter { !$0.isCompleted }
         case .completed:
-            tasks = allTasks.filter { $0.isCompleted }
+            filteredTasks = allTasks.filter { $0.isCompleted }
         }
+        
+        if !currentSearchText.isEmpty {
+            filteredTasks = filteredTasks.filter {
+                $0.title.lowercased().contains(currentSearchText.lowercased())
+            }
+        }
+        
+        tasks = filteredTasks
+    }
+    
+    func updateSearchText(_ text: String) {
+        currentSearchText = text
+        applyFilter()
     }
 }
