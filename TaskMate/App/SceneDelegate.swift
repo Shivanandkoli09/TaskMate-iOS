@@ -19,6 +19,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: scene as! UIWindowScene)
         window?.rootViewController = UINavigationController(rootViewController: TaskListViewController())
         window?.makeKeyAndVisible()
+        NotificationManager.shared.requestPermission()
         guard let _ = (scene as? UIWindowScene) else { return }
     }
 

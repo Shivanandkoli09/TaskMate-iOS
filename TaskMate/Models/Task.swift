@@ -18,7 +18,7 @@ struct Task: Codable, Identifiable {
     var id: UUID
     var title: String
     var notes: String?
-    var dueDate: Date
+    var dueDate: Date?
     var priority: TaskPriority
     var isCompleted: Bool
     

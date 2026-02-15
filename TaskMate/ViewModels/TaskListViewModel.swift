@@ -57,12 +57,14 @@ final class TaskListViewModel {
 
     func addTask(_ task: Task) {
         storageService.saveTask(task)
+        NotificationManager.shared.scheduleNotification(for: task)
         loadTasks()
     }
 
     func deleteTask(at index: Int) {
         let task = tasks[index]
         storageService.deleteTask(task)
+        NotificationManager.shared.cancelNotification(for: task)
         loadTasks()
     }
 
@@ -70,6 +72,13 @@ final class TaskListViewModel {
         var task = tasks[index]
         task.isCompleted.toggle()
         storageService.updateTask(task)
+
+        if task.isCompleted {
+            NotificationManager.shared.cancelNotification(for: task)
+        } else {
+            NotificationManager.shared.scheduleNotification(for: task)
+        }
+
         loadTasks()
     }
 
